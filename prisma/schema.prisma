@@ -1,14 +1,32 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
+}
+
+model Turno {
+  id           String   @id @default(cuid())
+
+  nombre       String
+  telefono     String
+  obraSocial   String?
+  motivo       String
+  antecedentes String?
+  comentario   String?
+
+  primeraVez   Boolean
+  sesiones     Int
+
+  fechas       Json
+
+  estado       String   @default("pendiente") // pendiente | confirmado | cancelado
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([telefono])
+  @@index([createdAt])
 }
