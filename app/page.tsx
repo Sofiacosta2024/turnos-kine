@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Fraunces, Work_Sans } from "next/font/google";
 
 const fraunces = Fraunces({
@@ -46,15 +47,15 @@ export default function Home() {
             className="text-lg tracking-tight"
             style={{ fontFamily: "var(--font-fraunces)" }}
           >
-            Lic. Sebastián Acosta
+            Lic. [Nombre Apellido]
           </span>
-          <a
-            href="#turno"
+          <Link
+            href="/turnos"
             className="rounded-full px-5 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90"
             style={{ backgroundColor: "#C1793B" }}
           >
             Reservar turno
-          </a>
+          </Link>
         </header>
 
         {/* Hero */}
@@ -78,13 +79,13 @@ export default function Home() {
               pensado para tu cuerpo y tus tiempos, no un protocolo generico.
             </p>
             <div className="flex flex-wrap gap-4 pt-2">
-              <a
-                href="#turno"
+              <Link
+                href="/turnos"
                 className="rounded-full px-6 py-3 text-sm font-medium text-white transition-colors hover:opacity-90"
                 style={{ backgroundColor: "#17272A" }}
               >
                 Reservar turno
-              </a>
+              </Link>
               <a
                 href="#servicios"
                 className="rounded-full border px-6 py-3 text-sm font-medium transition-colors"
@@ -102,7 +103,7 @@ export default function Home() {
             >
               {/* Reemplaza /kinesiologo-hero.jpg en /public por tu foto */}
               <Image
-                src="/kinesiologo-foto.jpg"
+                src="/kinesiologo-hero.jpg"
                 alt="Kinesiologo atendiendo a un paciente"
                 fill
                 sizes="(max-width: 640px) 100vw, 400px"
@@ -165,7 +166,7 @@ export default function Home() {
               style={{ backgroundColor: "#E4DFCF" }}
             >
               <Image
-                src="/kinesiologo-hero.jpg"
+                src="/kinesiologo-foto.jpg"
                 alt="Foto del kinesiologo"
                 fill
                 sizes="220px"
@@ -192,9 +193,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Turno / contacto */}
+        {/* Consultas */}
         <section
-          id="turno"
           className="my-14 rounded-2xl px-8 py-12 text-white sm:my-20 sm:px-12"
           style={{ backgroundColor: "#17272A" }}
         >
@@ -202,31 +202,22 @@ export default function Home() {
             className="mb-3 text-2xl"
             style={{ fontFamily: "var(--font-fraunces)" }}
           >
-            Reserva tu turno
+            Consultas
           </h2>
           <p
             className="mb-8 max-w-md text-sm leading-6"
             style={{ fontFamily: "var(--font-work-sans)", color: "#D8DED9" }}
           >
-            Escribime por WhatsApp o llama directamente. Atiendo de lunes a
-            viernes de 9 a 19 h.
+            Si tenes una duda antes de sacar el turno, escribime por
+            WhatsApp y te respondo a la brevedad.
           </p>
-          <div className="flex flex-wrap gap-4">
-            <a
-              href="https://wa.me/5492915340522"
-              className="rounded-full px-6 py-3 text-sm font-medium transition-colors hover:opacity-90"
-              style={{ backgroundColor: "#C1793B" }}
-            >
-              Escribir por WhatsApp
-            </a>
-            <a
-              href="tel:+549XXXXXXXXXX"
-              className="rounded-full border px-6 py-3 text-sm font-medium"
-              style={{ borderColor: "#F2EEE355" }}
-            >
-              [011 XXXX-XXXX]
-            </a>
-          </div>
+          <a
+            href="https://wa.me/549XXXXXXXXXX"
+            className="inline-block rounded-full px-6 py-3 text-sm font-medium transition-colors hover:opacity-90"
+            style={{ backgroundColor: "#C1793B" }}
+          >
+            Escribir por WhatsApp
+          </a>
         </section>
 
         {/* Footer */}
