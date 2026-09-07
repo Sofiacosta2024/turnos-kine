@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Turno {
-  id           String   @id @default(cuid())
+  id String @id @default(cuid())
 
   nombre       String
   telefono     String
@@ -17,15 +17,15 @@ model Turno {
   antecedentes String?
   comentario   String?
 
-  primeraVez   Boolean
-  sesiones     Int
+  primeraVez Boolean
+  sesiones   Int
 
-  fechas       Json
+  fechas Json
 
-  estado       String   @default("pendiente") // pendiente | confirmado | cancelado
+  estado String @default("pendiente") // pendiente | confirmado | cancelado
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([telefono])
   @@index([createdAt])
