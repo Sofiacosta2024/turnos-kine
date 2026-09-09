@@ -7,26 +7,139 @@ datasource db {
   provider = "postgresql"
 }
 
-model Turno {
-  id String @id @default(cuid())
+model diagnosticos {
+  id                   String                 @id
+  pacienteId           String
+  kinesiologoId        String
+  lesion               String
+  descripcion          String
+  tratamiento          String?
+  creadoEl             DateTime               @default(now())
+  activo               Boolean                @default(true)
+  users                users                  @relation(fields: [kinesiologoId], references: [id])
+  pacientes            pacientes              @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  ejercicios_asignados ejercicios_asignados[]
+}
 
-  nombre       String
-  telefono     String
-  obraSocial   String?
-  motivo       String
-  antecedentes String?
-  comentario   String?
+model ejercicios {
+  id                   String                 @id
+  nombre               String
+  descripcion          String
+  instrucciones        String?
+  zonaCuerpo           String
+  nivel                String                 @default("Basico")
+  creadoPorId          String
+  creadoEl             DateTime               @default(now())
+  users                users                  @relation(fields: [creadoPorId], references: [id])
+  ejercicios_asignados ejercicios_asignados[]
+}
 
-  primeraVez Boolean
-  sesiones   Int
+model ejercicios_asignados {
+  id              String           @id
+  pacienteId      String
+  ejercicioId     String
+  kinesiologoId   String
+  diagnosticoId   String?
+  objetivo        String?
+  series          Int              @default(3)
+  repeticiones    Int              @default(10)
+  frecuencia      String?
+  duracionMinutos Int?
+  estado          AsignacionEstado @default(ACTIVO)
+  asignadaEl      DateTime         @default(now())
+  diagnosticos    diagnosticos?    @relation(fields: [diagnosticoId], references: [id])
+  ejercicios      ejercicios       @relation(fields: [ejercicioId], references: [id])
+  users           users            @relation(fields: [kinesiologoId], references: [id])
+  pacientes       pacientes        @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  progresos       progresos[]
 
-  fechas Json
+  @@index([pacienteId])
+}
 
-  estado String @default("pendiente") // pendiente | confirmado | cancelado
+model pacientes {
+  id                                   String                 @id
+  userId                               String?                @unique
+  kinesiologoId                        String?
+  dni                                  String                 @unique
+  fechaNacimiento                      DateTime?
+  telefono                             String?
+  recibeRecordatorios                  Boolean                @default(true)
+  domicilio                            String?
+  obraSocial                           String?
+  createdAt                            DateTime               @default(now())
+  email                                String?
+  nombre                               String?
+  diagnosticos                         diagnosticos[]
+  ejercicios_asignados                 ejercicios_asignados[]
+  users_pacientes_kinesiologoIdTousers users?                 @relation("pacientes_kinesiologoIdTousers", fields: [kinesiologoId], references: [id])
+  users_pacientes_userIdTousers        users?                 @relation("pacientes_userIdTousers", fields: [userId], references: [id], onDelete: Cascade)
+  progresos                            progresos[]
+  turnos                               turnos[]
+}
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model progresos {
+  id                     String               @id
+  asignacionId           String
+  pacienteId             String
+  fecha                  DateTime             @default(now())
+  completado             Boolean              @default(false)
+  seriesRealizadas       Int?
+  repeticionesRealizadas Int?
+  pesoKg                 Float?
+  observaciones          String?
+  registradoPorUserId    String
+  ejercicios_asignados   ejercicios_asignados @relation(fields: [asignacionId], references: [id], onDelete: Cascade)
+  pacientes              pacientes            @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  users                  users                @relation(fields: [registradoPorUserId], references: [id])
+}
 
-  @@index([telefono])
-  @@index([createdAt])
+model turnos {
+  id            String      @id
+  pacienteId    String
+  kinesiologoId String
+  iniciaEn      DateTime
+  terminaEn     DateTime
+  estado        TurnoEstado @default(PENDIENTE)
+  motivo        String?
+  notas         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime
+  users         users       @relation(fields: [kinesiologoId], references: [id])
+  pacientes     pacientes   @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+
+  @@index([kinesiologoId, iniciaEn])
+}
+
+model users {
+  id                                       String                 @id
+  nombre                                   String
+  email                                    String                 @unique
+  passwordHash                             String
+  role                                     Role
+  createdAt                                DateTime               @default(now())
+  diagnosticos                             diagnosticos[]
+  ejercicios                               ejercicios[]
+  ejercicios_asignados                     ejercicios_asignados[]
+  pacientes_pacientes_kinesiologoIdTousers pacientes[]            @relation("pacientes_kinesiologoIdTousers")
+  pacientes_pacientes_userIdTousers        pacientes?             @relation("pacientes_userIdTousers")
+  progresos                                progresos[]
+  turnos                                   turnos[]
+}
+
+enum AsignacionEstado {
+  ACTIVO
+  PAUSADO
+  FINALIZADO
+}
+
+enum Role {
+  KINESIOLOGO
+  PACIENTE
+}
+
+enum TurnoEstado {
+  PENDIENTE
+  CONFIRMADO
+  COMPLETADO
+  CANCELADO
 }

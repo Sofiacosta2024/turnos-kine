@@ -120,20 +120,91 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.TurnoScalarFieldEnum = {
+exports.Prisma.DiagnosticosScalarFieldEnum = {
+  id: 'id',
+  pacienteId: 'pacienteId',
+  kinesiologoId: 'kinesiologoId',
+  lesion: 'lesion',
+  descripcion: 'descripcion',
+  tratamiento: 'tratamiento',
+  creadoEl: 'creadoEl',
+  activo: 'activo'
+};
+
+exports.Prisma.EjerciciosScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
-  telefono: 'telefono',
-  obraSocial: 'obraSocial',
-  motivo: 'motivo',
-  antecedentes: 'antecedentes',
-  comentario: 'comentario',
-  primeraVez: 'primeraVez',
-  sesiones: 'sesiones',
-  fechas: 'fechas',
+  descripcion: 'descripcion',
+  instrucciones: 'instrucciones',
+  zonaCuerpo: 'zonaCuerpo',
+  nivel: 'nivel',
+  creadoPorId: 'creadoPorId',
+  creadoEl: 'creadoEl'
+};
+
+exports.Prisma.Ejercicios_asignadosScalarFieldEnum = {
+  id: 'id',
+  pacienteId: 'pacienteId',
+  ejercicioId: 'ejercicioId',
+  kinesiologoId: 'kinesiologoId',
+  diagnosticoId: 'diagnosticoId',
+  objetivo: 'objetivo',
+  series: 'series',
+  repeticiones: 'repeticiones',
+  frecuencia: 'frecuencia',
+  duracionMinutos: 'duracionMinutos',
   estado: 'estado',
+  asignadaEl: 'asignadaEl'
+};
+
+exports.Prisma.PacientesScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  kinesiologoId: 'kinesiologoId',
+  dni: 'dni',
+  fechaNacimiento: 'fechaNacimiento',
+  telefono: 'telefono',
+  recibeRecordatorios: 'recibeRecordatorios',
+  domicilio: 'domicilio',
+  obraSocial: 'obraSocial',
+  createdAt: 'createdAt',
+  email: 'email',
+  nombre: 'nombre'
+};
+
+exports.Prisma.ProgresosScalarFieldEnum = {
+  id: 'id',
+  asignacionId: 'asignacionId',
+  pacienteId: 'pacienteId',
+  fecha: 'fecha',
+  completado: 'completado',
+  seriesRealizadas: 'seriesRealizadas',
+  repeticionesRealizadas: 'repeticionesRealizadas',
+  pesoKg: 'pesoKg',
+  observaciones: 'observaciones',
+  registradoPorUserId: 'registradoPorUserId'
+};
+
+exports.Prisma.TurnosScalarFieldEnum = {
+  id: 'id',
+  pacienteId: 'pacienteId',
+  kinesiologoId: 'kinesiologoId',
+  iniciaEn: 'iniciaEn',
+  terminaEn: 'terminaEn',
+  estado: 'estado',
+  motivo: 'motivo',
+  notas: 'notas',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UsersScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  role: 'role',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -141,29 +212,41 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
-exports.Prisma.JsonNullValueInput = {
-  JsonNull: Prisma.JsonNull
-};
-
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
-};
-
-exports.Prisma.JsonNullValueFilter = {
-  DbNull: Prisma.DbNull,
-  JsonNull: Prisma.JsonNull,
-  AnyNull: Prisma.AnyNull
 };
 
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.AsignacionEstado = exports.$Enums.AsignacionEstado = {
+  ACTIVO: 'ACTIVO',
+  PAUSADO: 'PAUSADO',
+  FINALIZADO: 'FINALIZADO'
+};
 
+exports.TurnoEstado = exports.$Enums.TurnoEstado = {
+  PENDIENTE: 'PENDIENTE',
+  CONFIRMADO: 'CONFIRMADO',
+  COMPLETADO: 'COMPLETADO',
+  CANCELADO: 'CANCELADO'
+};
+
+exports.Role = exports.$Enums.Role = {
+  KINESIOLOGO: 'KINESIOLOGO',
+  PACIENTE: 'PACIENTE'
+};
 
 exports.Prisma.ModelName = {
-  Turno: 'Turno'
+  diagnosticos: 'diagnosticos',
+  ejercicios: 'ejercicios',
+  ejercicios_asignados: 'ejercicios_asignados',
+  pacientes: 'pacientes',
+  progresos: 'progresos',
+  turnos: 'turnos',
+  users: 'users'
 };
 
 /**

@@ -75,7 +75,10 @@ export default function Turnos() {
   const [sesiones, setSesiones] = useState(3);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [nombre, setNombre] = useState("");
+  const [dni, setDni] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [email, setEmail] = useState("");
+  const [recibeRecordatorios, setRecibeRecordatorios] = useState(true);
   const [obraSocial, setObraSocial] = useState("");
   const [motivo, setMotivo] = useState(motivos[0]);
   const [antecedentes, setAntecedentes] = useState("");
@@ -86,7 +89,10 @@ export default function Turnos() {
 
   const maxSelectable = primeraVez ? 1 : sesiones;
 
-  const base = new Date(hoy.getFullYear(), hoy.getMonth() + monthOffset, 1);
+  const base = useMemo(
+  () => new Date(hoy.getFullYear(), hoy.getMonth() + monthOffset, 1),
+  [hoy, monthOffset]
+  );
   const year = base.getFullYear();
   const month = base.getMonth();
   const celdas = useMemo(() => generarMes(year, month), [year, month]);
@@ -135,6 +141,7 @@ export default function Turnos() {
   const puedeEnviar =
     nombre.trim() !== "" &&
     telefono.trim() !== "" &&
+    dni.trim() !== "" &&
     selectedDates.length === maxSelectable &&
     estadoEnvio !== "enviando";
 
@@ -150,6 +157,9 @@ export default function Turnos() {
         body: JSON.stringify({
           nombre,
           telefono,
+          dni,
+          email,
+          recibeRecordatorios,
           obraSocial,
           motivo,
           primeraVez,
@@ -169,7 +179,9 @@ export default function Turnos() {
       setEstadoEnvio("ok");
       // Limpiamos el formulario despues de un envio exitoso
       setNombre("");
+      setDni("");
       setTelefono("");
+      setEmail("");
       setObraSocial("");
       setAntecedentes("");
       setComentario("");
@@ -418,6 +430,18 @@ export default function Turnos() {
           </label>
 
           <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium">DNI</span>
+            <input
+              type="text"
+              value={dni}
+              onChange={(e) => setDni(e.target.value)}
+              placeholder="Ej: 30123456"
+              className="rounded-lg border bg-white px-4 py-2.5 text-sm outline-none focus:ring-2"
+              style={{ borderColor: "#17272A26" }}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
             <span className="text-sm font-medium">Telefono</span>
             <input
               type="tel"
@@ -427,6 +451,27 @@ export default function Turnos() {
               className="rounded-lg border bg-white px-4 py-2.5 text-sm outline-none focus:ring-2"
               style={{ borderColor: "#17272A26" }}
             />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium">Correo electronico (opcional)</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Ej: maria@mail.com"
+              className="rounded-lg border bg-white px-4 py-2.5 text-sm outline-none focus:ring-2"
+              style={{ borderColor: "#17272A26" }}
+            />
+          </label>
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={recibeRecordatorios}
+              onChange={(e) => setRecibeRecordatorios(e.target.checked)}
+            />
+            Quiero recibir recordatorios por mail antes del turno
           </label>
 
           <label className="flex flex-col gap-1.5">
@@ -500,7 +545,7 @@ export default function Turnos() {
           {estadoEnvio !== "enviando" &&
             selectedDates.length !== maxSelectable && (
               <span className="text-xs" style={{ color: "#3E4B47" }}>
-                Completa nombre, telefono y selecciona{" "}
+                Completa nombre, DNI, telefono y selecciona{" "}
                 {maxSelectable > 1 ? "todos los dias" : "un dia"} para poder
                 enviar.
               </span>

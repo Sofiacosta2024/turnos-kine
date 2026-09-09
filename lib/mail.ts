@@ -1,7 +1,9 @@
 import nodemailer from "nodemailer";
 
-const KINESIOLOGO_EMAIL = "buyerzapasya@gmail.com";
-
+const KINESIOLOGO_EMAIL = process.env.SMTP_USER;
+if (!KINESIOLOGO_EMAIL) {
+  throw new Error("Falta configurar SMTP_USER");
+}
 function getTransporter() {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,

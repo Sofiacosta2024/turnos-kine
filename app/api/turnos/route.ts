@@ -2,79 +2,95 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { enviarMailNuevoTurno } from "@/lib/mail";
 
+const HORA_FIJA = 9;
+const DURACION_MIN = 45;
+
+function construirHorario(fechaStr: string) {
+  const [y, m, d] = fechaStr.split("-").map(Number);
+  const iniciaEn = new Date(y, m - 1, d, HORA_FIJA, 0, 0);
+  const terminaEn = new Date(iniciaEn.getTime() + DURACION_MIN * 60000);
+  return { iniciaEn, terminaEn };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
     const {
-      nombre,
-      telefono,
-      obraSocial,
-      motivo,
-      primeraVez,
-      sesiones,
-      fechas,
-      antecedentes,
-      comentario,
+      nombre, telefono, dni, email, recibeRecordatorios,
+      obraSocial, motivo, primeraVez, sesiones, fechas,
     } = body ?? {};
 
-    // Validaciones minimas
-    if (!nombre || typeof nombre !== "string" || !nombre.trim()) {
-      return NextResponse.json({ error: "Falta el nombre" }, { status: 400 });
-    }
-    if (!telefono || typeof telefono !== "string" || !telefono.trim()) {
-      return NextResponse.json({ error: "Falta el telefono" }, { status: 400 });
-    }
-    if (!motivo || typeof motivo !== "string") {
-      return NextResponse.json({ error: "Falta el motivo" }, { status: 400 });
-    }
+    if (!nombre?.trim()) return NextResponse.json({ error: "Falta el nombre" }, { status: 400 });
+    if (!telefono?.trim()) return NextResponse.json({ error: "Falta el telefono" }, { status: 400 });
+    if (!dni?.trim()) return NextResponse.json({ error: "Falta el DNI" }, { status: 400 });
+    if (!motivo) return NextResponse.json({ error: "Falta el motivo" }, { status: 400 });
     if (!Array.isArray(fechas) || fechas.length === 0) {
-      return NextResponse.json(
-        { error: "Debe seleccionar al menos un dia" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Debe seleccionar al menos un dia" }, { status: 400 });
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "El correo ingresado no es valido" }, { status: 400 });
     }
 
-    const turno = await prisma.turno.create({
-      data: {
+    const kinesiologoId = process.env.KINESIOLOGO_ID;
+    if (!kinesiologoId) throw new Error("Falta configurar KINESIOLOGO_ID");
+
+    const paciente = await prisma.pacientes.upsert({
+      where: { dni: dni.trim() },
+      update: {
         nombre: nombre.trim(),
         telefono: telefono.trim(),
+        email: email?.trim() || null,
         obraSocial: obraSocial?.trim() || null,
-        motivo,
-        antecedentes: antecedentes?.trim() || null,
-        comentario: comentario?.trim() || null,
-        primeraVez: Boolean(primeraVez),
-        sesiones: Number(sesiones) || 1,
-        fechas, // array de strings "YYYY-MM-DD", guardado como JSON
+        recibeRecordatorios: Boolean(recibeRecordatorios),
+      },
+      create: {
+        id: crypto.randomUUID(),
+        dni: dni.trim(),
+        nombre: nombre.trim(),
+        telefono: telefono.trim(),
+        email: email?.trim() || null,
+        obraSocial: obraSocial?.trim() || null,
+        recibeRecordatorios: Boolean(recibeRecordatorios),
       },
     });
 
-    // Si el mail falla, no perdemos el turno (ya quedo guardado en la BD),
-    // pero avisamos en la respuesta para poder loguearlo o reintentar despues.
+    const turnosCreados = await Promise.all(
+      (fechas as string[]).map(async (fechaStr) => {
+        const { iniciaEn, terminaEn } = construirHorario(fechaStr);
+        return prisma.turnos.create({
+          data: {
+            id: crypto.randomUUID(),
+            pacienteId: paciente.id,
+            kinesiologoId,
+            iniciaEn,
+            terminaEn,
+            motivo,
+            estado: "PENDIENTE",
+            updatedAt: new Date(),
+          },
+        });
+      })
+    );
+
     let mailEnviado = true;
     try {
       await enviarMailNuevoTurno({
-        nombre: turno.nombre,
-        telefono: turno.telefono,
-        obraSocial: turno.obraSocial,
-        motivo: turno.motivo,
-        primeraVez: turno.primeraVez,
-        sesiones: turno.sesiones,
-        fechas: fechas as string[],
-        antecedentes: turno.antecedentes,
-        comentario: turno.comentario,
+        nombre: paciente.nombre ?? nombre,
+        telefono: paciente.telefono ?? telefono,
+        obraSocial: paciente.obraSocial,
+        motivo,
+        primeraVez: Boolean(primeraVez),
+        sesiones: Number(sesiones) || 1,
+        fechas,
       });
     } catch (mailError) {
       console.error("Error enviando mail de turno:", mailError);
       mailEnviado = false;
     }
 
-    return NextResponse.json({ ok: true, id: turno.id, mailEnviado });
+    return NextResponse.json({ ok: true, turnos: turnosCreados.map((t) => t.id), mailEnviado });
   } catch (error) {
     console.error("Error creando turno:", error);
-    return NextResponse.json(
-      { error: "No se pudo guardar el turno" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "No se pudo guardar el turno" }, { status: 500 });
   }
 }
