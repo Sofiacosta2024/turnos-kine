@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { enviarMailNuevoTurno } from "@/lib/mail";
+import { enviarMailNuevoTurno, enviarMailPaciente } from "@/lib/mail";
 
 const HORA_FIJA = 9;
 const DURACION_MIN = 45;
@@ -86,6 +86,17 @@ export async function POST(req: NextRequest) {
     } catch (mailError) {
       console.error("Error enviando mail de turno:", mailError);
       mailEnviado = false;
+    }
+
+    if (paciente.email) {
+      try {
+        await enviarMailPaciente(
+          { email: paciente.email, nombre: paciente.nombre ?? nombre },
+          turnosCreados
+        );
+      } catch (mailError) {
+        console.error("Error enviando mail al paciente:", mailError);
+      }
     }
 
     return NextResponse.json({ ok: true, turnos: turnosCreados.map((t) => t.id), mailEnviado });
