@@ -25,20 +25,10 @@ export type TurnoParaMail = {
   motivo: string;
   primeraVez: boolean;
   sesiones: number;
-  fechas: string[];
+  turnos: { iniciaEn: Date }[];
   antecedentes?: string | null;
   comentario?: string | null;
 };
-
-function formatoLargo(key: string) {
-  const [y, m, d] = key.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString("es-AR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-}
 
 export async function enviarMailNuevoTurno(turno: TurnoParaMail) {
   const transporter = getTransporter();
@@ -52,7 +42,22 @@ export async function enviarMailNuevoTurno(turno: TurnoParaMail) {
     ...(!turno.primeraVez
       ? ([["Cantidad de sesiones", String(turno.sesiones)]] as [string, string][])
       : []),
-    ["Dias elegidos", turno.fechas.map(formatoLargo).join(", ")],
+    [
+      "Turnos elegidos",
+      turno.turnos
+        .map((t) =>
+          t.iniciaEn.toLocaleString("es-AR", {
+            timeZone: "America/Argentina/Buenos_Aires",
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          })
+        )
+        .join("; "),
+    ],
     ["Antecedentes", turno.antecedentes || "-"],
     ["Comentario", turno.comentario || "-"],
   ];

@@ -1,30 +1,41 @@
 "use server";
 import { prisma } from "@/lib/prisma";
-import { construirHorario } from "@/lib/horarios";
+import { construirHorario, getHorariosDelDia } from "@/lib/horarios";
 import { revalidatePath } from "next/cache";
-import { enviarMailPaciente } from "@/lib/mail"; // ajustá la ruta a donde esté tu mail.ts
+import { enviarMailPaciente } from "@/lib/mail";
 
-export async function reagendarTurno(token: string, fecha: string) {
+export async function reagendarTurno(token: string, fecha: string, hora: string) {
   const turno = await prisma.turnos.findUnique({ where: { tokenCancelacion: token } });
   if (!turno) return { ok: false, error: "No encontramos el turno." };
   if (turno.estado === "CANCELADO") return { ok: false, error: "El turno está cancelado." };
   if (turno.iniciaEn < new Date()) return { ok: false, error: "El turno ya pasó." };
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return { ok: false, error: "Fecha inválida." };
+  if (!hora) return { ok: false, error: "Elegí un horario." };
+
   const [y, m, d] = fecha.split("-").map(Number);
   const diaSemana = new Date(y, m - 1, d).getDay();
   if (diaSemana === 0 || diaSemana === 6) return { ok: false, error: "Elegí un día de semana." };
 
-  const { iniciaEn, terminaEn } = construirHorario(fecha);
+  const validos = await getHorariosDelDia(fecha);
+  if (!validos.includes(hora)) return { ok: false, error: "Horario inválido." };
+
+  const { iniciaEn, terminaEn } = construirHorario(fecha, hora);
   if (isNaN(iniciaEn.getTime()) || iniciaEn < new Date()) {
     return { ok: false, error: "Elegí una fecha futura." };
   }
 
-  // Si tu route.ts no valida cupo al reservar, sacá este bloque para ser consistente
+  // Mismo criterio que el POST: choque por solapamiento, ignorando este mismo turno
   const ocupado = await prisma.turnos.findFirst({
-    where: { iniciaEn, estado: { not: "CANCELADO" }, id: { not: turno.id } },
+    where: {
+      kinesiologoId: turno.kinesiologoId,
+      estado: { not: "CANCELADO" },
+      id: { not: turno.id },
+      iniciaEn: { lt: terminaEn },
+      terminaEn: { gt: iniciaEn },
+    },
   });
-  if (ocupado) return { ok: false, error: "Ese día ya está ocupado, elegí otro." };
+  if (ocupado) return { ok: false, error: "Ese horario ya está ocupado, elegí otro." };
 
   const actualizado = await prisma.turnos.update({
     where: { id: turno.id },
@@ -43,7 +54,6 @@ export async function reagendarTurno(token: string, fecha: string) {
       );
     }
   } catch (err) {
-    // El turno ya se reagendó; si falla el mail no queremos mostrar error
     console.error("No se pudo enviar el mail de reagendado:", err);
   }
 

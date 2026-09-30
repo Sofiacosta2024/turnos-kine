@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Fraunces, Work_Sans } from "next/font/google";
 
@@ -73,7 +73,13 @@ export default function Turnos() {
   const [monthOffset, setMonthOffset] = useState(0);
   const [primeraVez, setPrimeraVez] = useState(true);
   const [sesiones, setSesiones] = useState(3);
-  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [selecciones, setSelecciones] = useState<Record<string, string>>({});
+  const selectedDates = Object.keys(selecciones).sort();
+
+  const [diaAbierto, setDiaAbierto] = useState<string | null>(null);
+  const [horarios, setHorarios] = useState<string[]>([]);
+  const [cargandoHorarios, setCargandoHorarios] = useState(false);
+  const ultimaConsulta = useRef("");
   const [nombre, setNombre] = useState("");
   const [dni, setDni] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -110,32 +116,67 @@ export default function Turnos() {
     return true;
   }
 
-  function toggleFecha(date: Date) {
+  async function abrirDia(date: Date) {
     if (!estaDisponible(date)) return;
     const key = toKey(date);
 
-    if (maxSelectable === 1) {
-      setSelectedDates((prev) => (prev[0] === key ? [] : [key]));
+    if (diaAbierto === key) {
+      setDiaAbierto(null);
       return;
     }
+    // si ya llegó al máximo, solo puede tocar días ya elegidos (para cambiarles la hora)
+    if (!(key in selecciones) && maxSelectable > 1 && selectedDates.length >= maxSelectable) return;
 
-    setSelectedDates((prev) => {
-      if (prev.includes(key)) return prev.filter((k) => k !== key);
-      if (prev.length >= maxSelectable) return prev;
-      return [...prev, key].sort();
+    setDiaAbierto(key);
+    setHorarios([]);
+    setCargandoHorarios(true);
+    ultimaConsulta.current = key;
+
+    try {
+      const res = await fetch(`/api/turnos/disponibles?fecha=${key}`);
+      const data = res.ok ? await res.json() : [];
+      if (ultimaConsulta.current === key) setHorarios(data);
+    } catch {
+      if (ultimaConsulta.current === key) setHorarios([]);
+    } finally {
+      if (ultimaConsulta.current === key) setCargandoHorarios(false);
+    }
+  }
+
+  function elegirHorario(hora: string) {
+    if (!diaAbierto) return;
+    setSelecciones((prev) =>
+      maxSelectable === 1 ? { [diaAbierto]: hora } : { ...prev, [diaAbierto]: hora }
+    );
+    setDiaAbierto(null);
+  }
+
+  function quitarDia(key: string) {
+    setSelecciones((prev) => {
+      const copia = { ...prev };
+      delete copia[key];
+      return copia;
     });
+    setDiaAbierto(null);
   }
 
   function handlePrimeraVez(valor: boolean) {
     setPrimeraVez(valor);
-    setSelectedDates([]);
+    setSelecciones({});
+    setDiaAbierto(null);
   }
 
   function handleSesiones(n: number) {
     setSesiones(n);
-    setSelectedDates((prev) => prev.slice(0, n));
+    setSelecciones((prev) =>
+      Object.fromEntries(
+        Object.entries(prev)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .slice(0, n)
+      )
+    );
+    setDiaAbierto(null);
   }
-
   const faltanDias = Math.max(maxSelectable - selectedDates.length, 0);
 
   const puedeEnviar =
@@ -164,7 +205,7 @@ export default function Turnos() {
           motivo,
           primeraVez,
           sesiones,
-          fechas: selectedDates,
+          turnos: selectedDates.map((fecha) => ({ fecha, hora: selecciones[fecha] })),
           antecedentes,
           comentario,
         }),
@@ -185,7 +226,8 @@ export default function Turnos() {
       setObraSocial("");
       setAntecedentes("");
       setComentario("");
-      setSelectedDates([]);
+      setSelecciones({});
+      setDiaAbierto(null);
     } catch (err) {
       setEstadoEnvio("error");
       setErrorMsg(
@@ -339,7 +381,7 @@ export default function Turnos() {
                 <button
                   key={key}
                   type="button"
-                  onClick={() => toggleFecha(date)}
+                  onClick={() => abrirDia(date)}
                   disabled={!disponible}
                   className="aspect-square rounded-lg text-sm transition-colors disabled:cursor-not-allowed"
                   style={{
@@ -389,7 +431,54 @@ export default function Turnos() {
               Sin cupo
             </span>
           </div>
+            {diaAbierto && (
+              <div
+                className="mt-4 rounded-xl bg-white p-4"
+                style={{ border: "1px solid #17272A26", fontFamily: "var(--font-work-sans)" }}
+              >
+                <p className="text-sm font-medium capitalize">{formatoLargo(diaAbierto)}</p>
 
+                {cargandoHorarios ? (
+                  <p className="mt-3 text-xs" style={{ color: "#3E4B47" }}>Cargando horarios...</p>
+                ) : horarios.length === 0 ? (
+                  <p className="mt-3 text-xs" style={{ color: "#3E4B47" }}>
+                    No quedan horarios libres para este dia.
+                  </p>
+                ) : (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {horarios.map((h) => {
+                      const activo = selecciones[diaAbierto] === h;
+                      return (
+                        <button
+                          key={h}
+                          type="button"
+                          onClick={() => elegirHorario(h)}
+                          className="rounded-full px-4 py-2 text-sm transition-colors"
+                          style={{
+                            backgroundColor: activo ? "#C1793B" : "#F2EEE3",
+                            color: activo ? "#ffffff" : "#17272A",
+                            border: "1px solid #17272A26",
+                          }}
+                        >
+                          {h}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {diaAbierto in selecciones && (
+                  <button
+                    type="button"
+                    onClick={() => quitarDia(diaAbierto)}
+                    className="mt-3 text-xs underline"
+                    style={{ color: "#3E4B47" }}
+                  >
+                    Quitar este dia
+                  </button>
+                )}
+              </div>
+            )}
           <p
             className="mt-4 text-sm"
             style={{ fontFamily: "var(--font-work-sans)" }}

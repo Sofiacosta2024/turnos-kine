@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { reagendarTurno } from "./actions";
 
 const diasSemana = ["L", "M", "M", "J", "V", "S", "D"];
@@ -35,6 +35,11 @@ export default function ReagendarForm({ token }: { token: string }) {
 
   const [monthOffset, setMonthOffset] = useState(0);
   const [seleccionada, setSeleccionada] = useState<string | null>(null);
+  const [horaElegida, setHoraElegida] = useState<string | null>(null);
+  const [horarios, setHorarios] = useState<string[]>([]);
+  const [cargandoHorarios, setCargandoHorarios] = useState(false);
+  const ultimaConsulta = useRef("");
+
   const [estado, setEstado] = useState<"idle" | "enviando" | "ok" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -52,11 +57,37 @@ export default function ReagendarForm({ token }: { token: string }) {
     return !FECHAS_SIN_CUPO.has(toKey(date));
   }
 
+  async function elegirDia(key: string) {
+    // tocar el mismo día lo deselecciona
+    if (seleccionada === key) {
+      setSeleccionada(null);
+      setHoraElegida(null);
+      setHorarios([]);
+      return;
+    }
+
+    setSeleccionada(key);
+    setHoraElegida(null);
+    setHorarios([]);
+    setCargandoHorarios(true);
+    ultimaConsulta.current = key;
+
+    try {
+      const res = await fetch(`/api/turnos/disponibles?fecha=${key}`);
+      const data = res.ok ? await res.json() : [];
+      if (ultimaConsulta.current === key) setHorarios(data);
+    } catch {
+      if (ultimaConsulta.current === key) setHorarios([]);
+    } finally {
+      if (ultimaConsulta.current === key) setCargandoHorarios(false);
+    }
+  }
+
   async function confirmar() {
-    if (!seleccionada) return;
+    if (!seleccionada || !horaElegida) return;
     setEstado("enviando");
     setErrorMsg("");
-    const res = await reagendarTurno(token, seleccionada);
+    const res = await reagendarTurno(token, seleccionada, horaElegida);
     if (res.ok) setEstado("ok");
     else {
       setEstado("error");
@@ -67,15 +98,17 @@ export default function ReagendarForm({ token }: { token: string }) {
   if (estado === "ok") {
     return (
       <p className="mt-6 text-sm" style={{ fontFamily: "var(--font-work-sans)", color: "#3E4B47" }}>
-        Listo! Tu turno se reagendó para el {seleccionada && formatoLargo(seleccionada)}.
-        Nos vamos a poner en contacto para confirmarlo.
+        Listo! Tu turno se reagendó para el {seleccionada && formatoLargo(seleccionada)} a las{" "}
+        {horaElegida} hs. Nos vamos a poner en contacto para confirmarlo.
       </p>
     );
   }
 
+  const puedeConfirmar = Boolean(seleccionada && horaElegida) && estado !== "enviando";
+
   return (
     <div className="mt-8" style={{ fontFamily: "var(--font-work-sans)" }}>
-      <p className="mb-3 text-sm font-medium">Elegí el nuevo día</p>
+      <p className="mb-3 text-sm font-medium">Elegí el nuevo día y horario</p>
 
       <div className="mb-3 flex items-center justify-between">
         <button type="button" onClick={() => setMonthOffset((m) => Math.max(m - 1, 0))}
@@ -108,7 +141,7 @@ export default function ReagendarForm({ token }: { token: string }) {
           const sel = seleccionada === key;
           return (
             <button key={key} type="button" disabled={!disponible}
-              onClick={() => setSeleccionada(sel ? null : key)}
+              onClick={() => elegirDia(key)}
               className="aspect-square rounded-lg text-sm transition-colors disabled:cursor-not-allowed"
               style={{
                 backgroundColor: sel ? "#C1793B" : disponible ? "#ffffff" : "transparent",
@@ -121,16 +154,58 @@ export default function ReagendarForm({ token }: { token: string }) {
         })}
       </div>
 
+      {seleccionada && (
+        <div
+          className="mt-4 rounded-xl bg-white p-4"
+          style={{ border: "1px solid #17272A26" }}
+        >
+          <p className="text-sm font-medium capitalize">{formatoLargo(seleccionada)}</p>
+
+          {cargandoHorarios ? (
+            <p className="mt-3 text-xs" style={{ color: "#3E4B47" }}>Cargando horarios...</p>
+          ) : horarios.length === 0 ? (
+            <p className="mt-3 text-xs" style={{ color: "#3E4B47" }}>
+              No quedan horarios libres para este día.
+            </p>
+          ) : (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {horarios.map((h) => {
+                const activo = horaElegida === h;
+                return (
+                  <button
+                    key={h}
+                    type="button"
+                    onClick={() => setHoraElegida(h)}
+                    className="rounded-full px-4 py-2 text-sm transition-colors"
+                    style={{
+                      backgroundColor: activo ? "#C1793B" : "#F2EEE3",
+                      color: activo ? "#ffffff" : "#17272A",
+                      border: "1px solid #17272A26",
+                    }}
+                  >
+                    {h}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       <p className="mt-4 text-sm">
-        {seleccionada ? `Nuevo turno: ${formatoLargo(seleccionada)}.` : "Todavía no elegiste ningún día."}
+        {seleccionada && horaElegida
+          ? `Nuevo turno: ${formatoLargo(seleccionada)} a las ${horaElegida} hs.`
+          : seleccionada
+          ? "Ahora elegí un horario."
+          : "Todavía no elegiste ningún día."}
       </p>
 
       <button type="button" onClick={confirmar}
-        disabled={!seleccionada || estado === "enviando"}
+        disabled={!puedeConfirmar}
         className="mt-6 inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-medium text-white transition-colors"
         style={{
-          backgroundColor: seleccionada && estado !== "enviando" ? "#C1793B" : "#C1793B66",
-          cursor: seleccionada && estado !== "enviando" ? "pointer" : "not-allowed",
+          backgroundColor: puedeConfirmar ? "#C1793B" : "#C1793B66",
+          cursor: puedeConfirmar ? "pointer" : "not-allowed",
         }}>
         {estado === "enviando" ? "Reagendando..." : "Confirmar nueva fecha"}
       </button>
