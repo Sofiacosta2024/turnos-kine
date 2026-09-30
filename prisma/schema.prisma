@@ -106,6 +106,7 @@ model turnos {
   updatedAt     DateTime
   users         users       @relation(fields: [kinesiologoId], references: [id])
   pacientes     pacientes   @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  tokenCancelacion String @unique @default(dbgenerated("gen_random_uuid()"))
 
   @@index([kinesiologoId, iniciaEn])
 }

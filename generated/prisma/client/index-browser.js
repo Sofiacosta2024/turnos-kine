@@ -195,7 +195,8 @@ exports.Prisma.TurnosScalarFieldEnum = {
   motivo: 'motivo',
   notas: 'notas',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  tokenCancelacion: 'tokenCancelacion'
 };
 
 exports.Prisma.UsersScalarFieldEnum = {

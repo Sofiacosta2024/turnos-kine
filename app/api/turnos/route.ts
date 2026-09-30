@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { enviarMailNuevoTurno, enviarMailPaciente } from "@/lib/mail";
+import { construirHorario } from "@/lib/horarios";
 
-const HORA_FIJA = 9;
-const DURACION_MIN = 45;
-
-function construirHorario(fechaStr: string) {
-  const [y, m, d] = fechaStr.split("-").map(Number);
-  const iniciaEn = new Date(y, m - 1, d, HORA_FIJA, 0, 0);
-  const terminaEn = new Date(iniciaEn.getTime() + DURACION_MIN * 60000);
-  return { iniciaEn, terminaEn };
-}
 
 export async function POST(req: NextRequest) {
   try {

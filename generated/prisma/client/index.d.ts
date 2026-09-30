@@ -7772,6 +7772,7 @@ export namespace Prisma {
     notas: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    tokenCancelacion: string | null
   }
 
   export type TurnosMaxAggregateOutputType = {
@@ -7785,6 +7786,7 @@ export namespace Prisma {
     notas: string | null
     createdAt: Date | null
     updatedAt: Date | null
+    tokenCancelacion: string | null
   }
 
   export type TurnosCountAggregateOutputType = {
@@ -7798,6 +7800,7 @@ export namespace Prisma {
     notas: number
     createdAt: number
     updatedAt: number
+    tokenCancelacion: number
     _all: number
   }
 
@@ -7813,6 +7816,7 @@ export namespace Prisma {
     notas?: true
     createdAt?: true
     updatedAt?: true
+    tokenCancelacion?: true
   }
 
   export type TurnosMaxAggregateInputType = {
@@ -7826,6 +7830,7 @@ export namespace Prisma {
     notas?: true
     createdAt?: true
     updatedAt?: true
+    tokenCancelacion?: true
   }
 
   export type TurnosCountAggregateInputType = {
@@ -7839,6 +7844,7 @@ export namespace Prisma {
     notas?: true
     createdAt?: true
     updatedAt?: true
+    tokenCancelacion?: true
     _all?: true
   }
 
@@ -7925,6 +7931,7 @@ export namespace Prisma {
     notas: string | null
     createdAt: Date
     updatedAt: Date
+    tokenCancelacion: string
     _count: TurnosCountAggregateOutputType | null
     _min: TurnosMinAggregateOutputType | null
     _max: TurnosMaxAggregateOutputType | null
@@ -7955,6 +7962,7 @@ export namespace Prisma {
     notas?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    tokenCancelacion?: boolean
     users?: boolean | usersDefaultArgs<ExtArgs>
     pacientes?: boolean | pacientesDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["turnos"]>
@@ -7970,6 +7978,7 @@ export namespace Prisma {
     notas?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    tokenCancelacion?: boolean
     users?: boolean | usersDefaultArgs<ExtArgs>
     pacientes?: boolean | pacientesDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["turnos"]>
@@ -7985,6 +7994,7 @@ export namespace Prisma {
     notas?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    tokenCancelacion?: boolean
     users?: boolean | usersDefaultArgs<ExtArgs>
     pacientes?: boolean | pacientesDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["turnos"]>
@@ -8000,9 +8010,10 @@ export namespace Prisma {
     notas?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    tokenCancelacion?: boolean
   }
 
-  export type turnosOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "pacienteId" | "kinesiologoId" | "iniciaEn" | "terminaEn" | "estado" | "motivo" | "notas" | "createdAt" | "updatedAt", ExtArgs["result"]["turnos"]>
+  export type turnosOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "pacienteId" | "kinesiologoId" | "iniciaEn" | "terminaEn" | "estado" | "motivo" | "notas" | "createdAt" | "updatedAt" | "tokenCancelacion", ExtArgs["result"]["turnos"]>
   export type turnosInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     users?: boolean | usersDefaultArgs<ExtArgs>
     pacientes?: boolean | pacientesDefaultArgs<ExtArgs>
@@ -8033,6 +8044,7 @@ export namespace Prisma {
       notas: string | null
       createdAt: Date
       updatedAt: Date
+      tokenCancelacion: string
     }, ExtArgs["result"]["turnos"]>
     composites: {}
   }
@@ -8468,6 +8480,7 @@ export namespace Prisma {
     readonly notas: FieldRef<"turnos", 'String'>
     readonly createdAt: FieldRef<"turnos", 'DateTime'>
     readonly updatedAt: FieldRef<"turnos", 'DateTime'>
+    readonly tokenCancelacion: FieldRef<"turnos", 'String'>
   }
     
 
@@ -10242,7 +10255,8 @@ export namespace Prisma {
     motivo: 'motivo',
     notas: 'notas',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    tokenCancelacion: 'tokenCancelacion'
   };
 
   export type TurnosScalarFieldEnum = (typeof TurnosScalarFieldEnum)[keyof typeof TurnosScalarFieldEnum]
@@ -10857,6 +10871,7 @@ export namespace Prisma {
     notas?: StringNullableFilter<"turnos"> | string | null
     createdAt?: DateTimeFilter<"turnos"> | Date | string
     updatedAt?: DateTimeFilter<"turnos"> | Date | string
+    tokenCancelacion?: StringFilter<"turnos"> | string
     users?: XOR<UsersScalarRelationFilter, usersWhereInput>
     pacientes?: XOR<PacientesScalarRelationFilter, pacientesWhereInput>
   }
@@ -10872,12 +10887,14 @@ export namespace Prisma {
     notas?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    tokenCancelacion?: SortOrder
     users?: usersOrderByWithRelationInput
     pacientes?: pacientesOrderByWithRelationInput
   }
 
   export type turnosWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    tokenCancelacion?: string
     AND?: turnosWhereInput | turnosWhereInput[]
     OR?: turnosWhereInput[]
     NOT?: turnosWhereInput | turnosWhereInput[]
@@ -10892,7 +10909,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"turnos"> | Date | string
     users?: XOR<UsersScalarRelationFilter, usersWhereInput>
     pacientes?: XOR<PacientesScalarRelationFilter, pacientesWhereInput>
-  }, "id">
+  }, "id" | "tokenCancelacion">
 
   export type turnosOrderByWithAggregationInput = {
     id?: SortOrder
@@ -10905,6 +10922,7 @@ export namespace Prisma {
     notas?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    tokenCancelacion?: SortOrder
     _count?: turnosCountOrderByAggregateInput
     _max?: turnosMaxOrderByAggregateInput
     _min?: turnosMinOrderByAggregateInput
@@ -10924,6 +10942,7 @@ export namespace Prisma {
     notas?: StringNullableWithAggregatesFilter<"turnos"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"turnos"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"turnos"> | Date | string
+    tokenCancelacion?: StringWithAggregatesFilter<"turnos"> | string
   }
 
   export type usersWhereInput = {
@@ -11484,6 +11503,7 @@ export namespace Prisma {
     notas?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    tokenCancelacion?: string
     users: usersCreateNestedOneWithoutTurnosInput
     pacientes: pacientesCreateNestedOneWithoutTurnosInput
   }
@@ -11499,6 +11519,7 @@ export namespace Prisma {
     notas?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    tokenCancelacion?: string
   }
 
   export type turnosUpdateInput = {
@@ -11510,6 +11531,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
     users?: usersUpdateOneRequiredWithoutTurnosNestedInput
     pacientes?: pacientesUpdateOneRequiredWithoutTurnosNestedInput
   }
@@ -11525,6 +11547,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
   }
 
   export type turnosCreateManyInput = {
@@ -11538,6 +11561,7 @@ export namespace Prisma {
     notas?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    tokenCancelacion?: string
   }
 
   export type turnosUpdateManyMutationInput = {
@@ -11549,6 +11573,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
   }
 
   export type turnosUncheckedUpdateManyInput = {
@@ -11562,6 +11587,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
   }
 
   export type usersCreateInput = {
@@ -12194,6 +12220,7 @@ export namespace Prisma {
     notas?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    tokenCancelacion?: SortOrder
   }
 
   export type turnosMaxOrderByAggregateInput = {
@@ -12207,6 +12234,7 @@ export namespace Prisma {
     notas?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    tokenCancelacion?: SortOrder
   }
 
   export type turnosMinOrderByAggregateInput = {
@@ -12220,6 +12248,7 @@ export namespace Prisma {
     notas?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    tokenCancelacion?: SortOrder
   }
 
   export type EnumTurnoEstadoWithAggregatesFilter<$PrismaModel = never> = {
@@ -14310,6 +14339,7 @@ export namespace Prisma {
     notas?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    tokenCancelacion?: string
     users: usersCreateNestedOneWithoutTurnosInput
   }
 
@@ -14323,6 +14353,7 @@ export namespace Prisma {
     notas?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    tokenCancelacion?: string
   }
 
   export type turnosCreateOrConnectWithoutPacientesInput = {
@@ -14509,6 +14540,7 @@ export namespace Prisma {
     notas?: StringNullableFilter<"turnos"> | string | null
     createdAt?: DateTimeFilter<"turnos"> | Date | string
     updatedAt?: DateTimeFilter<"turnos"> | Date | string
+    tokenCancelacion?: StringFilter<"turnos"> | string
   }
 
   export type ejercicios_asignadosCreateWithoutProgresosInput = {
@@ -15149,6 +15181,7 @@ export namespace Prisma {
     notas?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    tokenCancelacion?: string
     pacientes: pacientesCreateNestedOneWithoutTurnosInput
   }
 
@@ -15162,6 +15195,7 @@ export namespace Prisma {
     notas?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    tokenCancelacion?: string
   }
 
   export type turnosCreateOrConnectWithoutUsersInput = {
@@ -15559,6 +15593,7 @@ export namespace Prisma {
     notas?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    tokenCancelacion?: string
   }
 
   export type diagnosticosUpdateWithoutPacientesInput = {
@@ -15682,6 +15717,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
     users?: usersUpdateOneRequiredWithoutTurnosNestedInput
   }
 
@@ -15695,6 +15731,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
   }
 
   export type turnosUncheckedUpdateManyWithoutPacientesInput = {
@@ -15707,6 +15744,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
   }
 
   export type diagnosticosCreateManyUsersInput = {
@@ -15779,6 +15817,7 @@ export namespace Prisma {
     notas?: string | null
     createdAt?: Date | string
     updatedAt: Date | string
+    tokenCancelacion?: string
   }
 
   export type diagnosticosUpdateWithoutUsersInput = {
@@ -15984,6 +16023,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
     pacientes?: pacientesUpdateOneRequiredWithoutTurnosNestedInput
   }
 
@@ -15997,6 +16037,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
   }
 
   export type turnosUncheckedUpdateManyWithoutUsersInput = {
@@ -16009,6 +16050,7 @@ export namespace Prisma {
     notas?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tokenCancelacion?: StringFieldUpdateOperationsInput | string
   }
 
 

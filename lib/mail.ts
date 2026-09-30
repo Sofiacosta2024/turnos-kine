@@ -86,7 +86,7 @@ export async function enviarMailNuevoTurno(turno: TurnoParaMail) {
 
 export async function enviarMailPaciente(
   paciente: { email: string; nombre: string },
-  turnos: { id: string; iniciaEn: Date; terminaEn: Date }[]
+  turnos: { id: string; iniciaEn: Date; terminaEn: Date; tokenCancelacion: string }[]
 ) {
   const eventos = turnos.map((t) => ({
     uid: t.id,
@@ -97,24 +97,34 @@ export async function enviarMailPaciente(
   }));
 
   const icsContent = generarICS(eventos);
+  const estiloBoton = (color: string) =>
+  `display:inline-block;background-color:${color};color:#ffffff;
+   text-decoration:none;padding:10px 20px;border-radius:6px;
+   font-family:sans-serif;font-size:14px;font-weight:600;margin:4px 6px 0 0;`;
 
   const linksHtml = turnos
     .map((t) => {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+      const linkCancelar = `${baseUrl}/turnos/cancelar/${t.tokenCancelacion}`;
+      const linkReagendar = `${baseUrl}/turnos/reagendar/${t.tokenCancelacion}`;
       const link = generarLinkGoogleCalendar(
         "Turno de kinesiología",
         "Turno confirmado",
         t.iniciaEn,
         t.terminaEn
       );
-      const fecha = t.iniciaEn.toLocaleString("es-AR", { dateStyle: "full", timeStyle: "short" });
+      const fecha = t.iniciaEn.toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", dateStyle: "full", timeStyle: "short" });
       return `
         <div style="margin:16px 0;padding:12px;border:1px solid #e0e0e0;border-radius:8px;">
           <p style="margin:0 0 10px 0;font-weight:600;">${fecha}</p>
-          <a href="${link}" target="_blank"
-            style="display:inline-block;background-color:#4285F4;color:#ffffff;
-                    text-decoration:none;padding:10px 20px;border-radius:6px;
-                    font-family:sans-serif;font-size:14px;font-weight:600;">
+          <a href="${link}" target="_blank" style="${estiloBoton("#4285F4")}">
             Agregar al calendario de Google
+          </a>
+          <a href="${linkReagendar}" target="_blank" style="${estiloBoton("#F59E0B")}">
+            Reagendar turno
+          </a>
+          <a href="${linkCancelar}" target="_blank" style="${estiloBoton("#DC2626")}">
+            Cancelar turno
           </a>
         </div>
       `;
